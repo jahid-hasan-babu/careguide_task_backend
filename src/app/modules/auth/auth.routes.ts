@@ -13,12 +13,12 @@ router.post("/login", validateRequest(authValidation.loginUser), AuthControllers
 router.post("/refresh", validateRequest(authValidation.refreshToken), AuthControllers.refreshToken);
 router.post("/logout", AuthControllers.logout);
 
-// Password recovery flow (Public)
+
 router.post("/forgot-password", validateRequest(authValidation.forgotPassword), AuthControllers.forgotPassword);
 router.post("/verify-reset-otp", validateRequest(authValidation.verifyResetOtp), AuthControllers.verifyResetOtp);
 router.post("/reset-password", validateRequest(authValidation.resetPassword), AuthControllers.resetPassword);
 
-// Password management (Authenticated)
+
 router.post("/change-password", authenticate, validateRequest(authValidation.changePassword), AuthControllers.changePassword);
 
 export const AuthRouters = router;

@@ -73,7 +73,7 @@ const registerUser = async (
     });
   }
 
-  // Dispatch OTP email job to BullMQ queue
+
   await enqueueOtpEmail(user.email, user.fullName, otp);
 
   return {
@@ -165,7 +165,7 @@ const loginUser = async (
 
   const user = await User.findOne({ email, isDeleted: false }).select("+password");
   if (!user) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid email or password.");
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid email");
   }
 
   if (!user.isVerified) {
@@ -181,7 +181,7 @@ const loginUser = async (
 
   const isMatch = await bcrypt.compare(payload.password, user.password);
   if (!isMatch) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid email or password.");
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid password");
   }
 
   const userId = (user._id as object).toString();
