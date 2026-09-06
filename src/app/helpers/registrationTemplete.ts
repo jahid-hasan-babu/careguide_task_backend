@@ -100,7 +100,7 @@ export const accountCreationEmail = (email: string, password: string) => {
                 Account Created Successfully
             </div>
             <div class="header">
-                <h1>Welcome to VMTA!</h1>
+                <h1>Welcome to NoteTask!</h1>
             </div>
             <div class="content">
                 <p>Hello,</p>
@@ -122,7 +122,7 @@ export const accountCreationEmail = (email: string, password: string) => {
             </div>
             <div class="footer">
                 <p>Thank you for choosing our service.</p>
-                <p>© 2026 All rights reserved.</p>
+                <p>© ${new Date().getFullYear()} NoteTask. All rights reserved.</p>
             </div>
         </div>
     </body>

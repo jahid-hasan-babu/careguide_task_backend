@@ -62,8 +62,7 @@ const sentEmailUtility = async (
 
   // Email options
   const mailOptions = {
-    // from: Aira - Rental Service: <${config.emailSender.email}>,
-    from: `"VERDICT" <${config.emailSender.email}>`,
+    from: `"NoteTask" <${config.emailSender.email}>`,
     to: emailTo,
     subject: EmailSubject,
     html: EmailHTML,

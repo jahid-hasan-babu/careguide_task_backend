@@ -46,7 +46,7 @@ export const enqueueOtpEmail = async (
     const html = otpEmailTemplate(fullName, otp);
     sentEmailUtility(
       email,
-      "Verify Your Email - Verification Code",
+      `NoteTask - Your Verification Code is ${otp}`,
       `Your verification code is: ${otp}. It expires in 5 minutes.`,
       html
     ).catch((mailErr) => {
@@ -72,7 +72,7 @@ export const enqueuePasswordResetEmail = async (
     const html = passwordResetOtpTemplate(fullName, otp);
     sentEmailUtility(
       email,
-      "Password Reset Request - Verification Code",
+      `NoteTask - Password Reset Code: ${otp}`,
       `Your password reset code is: ${otp}. It expires in 5 minutes.`,
       html
     ).catch((mailErr) => {
@@ -96,7 +96,7 @@ export const enqueuePasswordChangedEmail = async (
     const html = passwordChangedSuccessTemplate(fullName);
     sentEmailUtility(
       email,
-      "Security Alert: Your Password Was Changed",
+      "NoteTask - Your Password Was Updated",
       "The password for your account was successfully updated.",
       html
     ).catch((mailErr) => {
@@ -120,7 +120,7 @@ export const initEmailWorker = (): Worker<IEmailJobData> => {
         const html = otpEmailTemplate(fullName, otp || "");
         await sentEmailUtility(
           email,
-          "Verify Your Email - Verification Code",
+          `NoteTask - Your Verification Code is ${otp}`,
           `Your verification code is: ${otp}. It expires in 5 minutes.`,
           html
         );
@@ -128,7 +128,7 @@ export const initEmailWorker = (): Worker<IEmailJobData> => {
         const html = passwordResetOtpTemplate(fullName, otp || "");
         await sentEmailUtility(
           email,
-          "Password Reset Request - Verification Code",
+          `NoteTask - Password Reset Code: ${otp}`,
           `Your password reset code is: ${otp}. It expires in 5 minutes.`,
           html
         );
@@ -136,7 +136,7 @@ export const initEmailWorker = (): Worker<IEmailJobData> => {
         const html = passwordChangedSuccessTemplate(fullName);
         await sentEmailUtility(
           email,
-          "Security Alert: Your Password Was Changed",
+          "NoteTask - Your Password Was Updated",
           "The password for your account was successfully updated.",
           html
         );

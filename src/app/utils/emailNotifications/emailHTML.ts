@@ -32,7 +32,7 @@ export const settingsUpdateEmailTemplate = (userName: string = "User") => `<!DOC
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Policy Updates - VERDICT</title>
+    <title>Policy Updates - NoteTask</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0c0e17; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed; background-color: #0c0e17; padding: 40px 0;">
@@ -66,7 +66,7 @@ export const settingsUpdateEmailTemplate = (userName: string = "User") => `<!DOC
                                 Hello ${userName},
                             </p>
                             <p style="color: #94a3b8; font-size: 15px; line-height: 1.6; margin: 0 0 24px 0;">
-                                We want to let you know that we have recently updated our platform policies to ensure greater transparency, enhanced user privacy, and better service across <strong style="color: #f1f5f9;">VERDICT</strong>.
+                                We want to let you know that we have recently updated our platform policies to ensure greater transparency, enhanced user privacy, and better service across <strong style="color: #f1f5f9;">NoteTask</strong>.
                             </p>
 
                             <!-- Updated Sections Card -->
@@ -129,7 +129,7 @@ export const settingsUpdateEmailTemplate = (userName: string = "User") => `<!DOC
                             <!-- Signoff -->
                             <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #23283e;">
                                 <p style="color: #64748b; font-size: 13px; margin: 0 0 4px 0;">Best regards,</p>
-                                <p style="color: #94a3b8; font-size: 14px; font-weight: 600; margin: 0;">The VERDICT Team</p>
+                                <p style="color: #94a3b8; font-size: 14px; font-weight: 600; margin: 0;">The NoteTask Team</p>
                             </div>
                         </td>
                     </tr>
@@ -138,10 +138,10 @@ export const settingsUpdateEmailTemplate = (userName: string = "User") => `<!DOC
                     <tr>
                         <td align="center" style="background-color: #0f121d; padding: 25px 30px; border-top: 1px solid #1e2235;">
                             <p style="color: #475569; font-size: 12px; margin: 0 0 8px 0;">
-                                You are receiving this mandatory notification because your account is active on VERDICT.
+                                You are receiving this mandatory notification because your account is active on NoteTask.
                             </p>
                             <p style="color: #334155; font-size: 12px; margin: 0;">
-                                &copy; ${new Date().getFullYear()} VERDICT. All rights reserved.
+                                &copy; ${new Date().getFullYear()} NoteTask. All rights reserved.
                             </p>
                         </td>
                     </tr>
