@@ -1,0 +1,82 @@
+# ==============================================================================
+# Development Docker Compose for CareGuide Backend
+# Enables live hot-reload with host source code bind mounts
+# Run: docker compose -f docker-compose.dev.yml up --build
+# ==============================================================================
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: careguide-api-dev
+    restart: unless-stopped
+    ports:
+      - "${PORT:-5000}:5000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - REDIS_HOST=redis
+    volumes:
+      - ./src:/app/src
+      - ./uploads:/app/uploads
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./package.json:/app/package.json:ro
+      - /app/node_modules
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - careguide-net
+
+  mongodb:
+    image: mongo:7.0
+    container_name: careguide-mongodb-dev
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: careguide_backend
+    volumes:
+      - mongodb_dev_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - careguide-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: careguide-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - careguide-net
+
+volumes:
+  mongodb_dev_data:
+    name: careguide_mongodb_dev_data
+  redis_dev_data:
+    name: careguide_redis_dev_data
+
+networks:
+  careguide-net:
+    name: careguide-network-dev
+    driver: bridge

@@ -44,6 +44,11 @@ async function main() {
     console.info("SIGTERM received, shutting down gracefully...");
     exitHandler();
   });
+
+  process.on("SIGINT", () => {
+    console.info("SIGINT received, shutting down gracefully...");
+    exitHandler();
+  });
 }
 
 main();

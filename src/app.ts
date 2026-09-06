@@ -54,6 +54,14 @@ app.get("/", (_req: Request, res: Response) => {
     message: "Secure Note-Taking API is running.",
   });
 });
+
+app.get("/health", (_req: Request, res: Response) => {
+  res.status(httpStatus.OK).json({
+    status: "ok",
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+});
 app.use("/api/v1", router);
 app.use(globalErrorHandler);
 app.use((req: Request, res: Response, _next: NextFunction) => {

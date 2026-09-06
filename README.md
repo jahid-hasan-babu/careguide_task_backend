@@ -82,6 +82,20 @@ Server starts at `http://localhost:5000`
 
 > **Super Admin** is automatically seeded on first startup using the credentials from `.env`.
 
+### Run with Docker Compose
+
+For a fully containerized stack (Node.js API + MongoDB 7 + Redis 7):
+
+```bash
+# Production stack
+docker compose up -d --build
+
+# Development stack with live hot-reload
+docker compose -f docker-compose.dev.yml up --build
+```
+
+See [DOCKER.md](file:///d:/Jahid_Hasan/Ai/careguide_backend/DOCKER.md) for full architecture and production deployment documentation.
+
 ---
 
 ## API Reference
