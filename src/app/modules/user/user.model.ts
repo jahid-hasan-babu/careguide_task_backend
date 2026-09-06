@@ -15,6 +15,8 @@ const userSchema = new Schema<IUserDocument>(
     isVerified: { type: Boolean, default: false },
     otp: { type: String, select: false },
     otpExpires: { type: Date, select: false },
+    passwordResetOtp: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
   },
   { timestamps: true }
 );

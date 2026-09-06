@@ -26,6 +26,25 @@ export interface IResendOtp {
   email: string;
 }
 
+export interface IForgotPassword {
+  email: string;
+}
+
+export interface IVerifyResetOtp {
+  email: string;
+  otp: string;
+}
+
+export interface IResetPassword {
+  resetToken: string;
+  newPassword: string;
+}
+
+export interface IChangePassword {
+  oldPassword: string;
+  newPassword: string;
+}
+
 // ─── JWT payload shapes ────────────────────────────────────────────────────────
 
 /**

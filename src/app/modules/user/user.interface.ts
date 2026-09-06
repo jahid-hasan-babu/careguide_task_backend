@@ -12,6 +12,8 @@ export interface IUser {
   isVerified: boolean;
   otp?: string;
   otpExpires?: Date;
+  passwordResetOtp?: string;
+  passwordResetExpires?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }

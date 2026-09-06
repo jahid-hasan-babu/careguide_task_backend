@@ -11,7 +11,7 @@ async function main() {
   await connectDB();
   seedSuperAdmin();
 
-  // Initialize BullMQ background worker for email queue
+
   initEmailWorker();
 
   const server: Server = app.listen(port, () => {
@@ -20,7 +20,7 @@ async function main() {
 
   const exitHandler = async () => {
     if (emailWorker) {
-      await emailWorker.close().catch(() => {});
+      await emailWorker.close().catch(() => { });
     }
     if (server) {
       server.close(() => {

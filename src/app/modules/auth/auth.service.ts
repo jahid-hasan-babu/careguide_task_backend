@@ -4,15 +4,23 @@ import httpStatus from "http-status";
 import config from "../../../config";
 import ApiError from "../../errors/ApiError";
 import { jwtHelpers } from "../../helpers/jwtHelpers";
-import { enqueueOtpEmail } from "../../queues/email.queue";
+import {
+  enqueueOtpEmail,
+  enqueuePasswordChangedEmail,
+  enqueuePasswordResetEmail,
+} from "../../queues/email.queue";
 import User from "../user/user.model";
 import {
   IAuthTokens,
+  IChangePassword,
+  IForgotPassword,
   IRefreshRequest,
   IRegisterUser,
   IResendOtp,
+  IResetPassword,
   IUserLogin,
   IVerifyOtp,
+  IVerifyResetOtp,
 } from "./auth.interface";
 
 const parseExpiresInSeconds = (value: string | undefined): number => {
@@ -235,6 +243,138 @@ const logout = (): { message: string; instructions: string } => {
   };
 };
 
+const forgotPassword = async (
+  payload: IForgotPassword
+): Promise<{ message: string }> => {
+  const email = payload.email.trim().toLowerCase();
+  const user = await User.findOne({ email, isDeleted: false });
+
+  // Anti-enumeration defense: always respond with the same success message
+  if (!user || user.status === "BLOCKED") {
+    return {
+      message: "If an account with this email exists, a password reset code has been sent.",
+    };
+  }
+
+  const otp = crypto.randomInt(100000, 1000000).toString();
+  user.passwordResetOtp = otp;
+  user.passwordResetExpires = new Date(Date.now() + config.otp.expires_in_minutes * 60 * 1000);
+  await user.save();
+
+  // Enqueue password reset email via BullMQ
+  await enqueuePasswordResetEmail(user.email, user.fullName, otp);
+
+  return {
+    message: "If an account with this email exists, a password reset code has been sent.",
+  };
+};
+
+const verifyResetOtp = async (
+  payload: IVerifyResetOtp
+): Promise<{ resetToken: string }> => {
+  const email = payload.email.trim().toLowerCase();
+  const user = await User.findOne({ email, isDeleted: false }).select(
+    "+passwordResetOtp +passwordResetExpires"
+  );
+
+  if (!user || !user.passwordResetOtp || !user.passwordResetExpires) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid or expired password reset code.");
+  }
+
+  if (new Date() > user.passwordResetExpires) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Password reset code has expired. Please request a new one."
+    );
+  }
+
+  if (user.passwordResetOtp !== payload.otp.trim()) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid password reset code.");
+  }
+
+  // Clear OTP fields immediately to prevent replay
+  user.passwordResetOtp = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  // Generate single-purpose reset token (10m TTL)
+  const resetToken = jwtHelpers.generateResetPasswordToken((user._id as object).toString());
+
+  return { resetToken };
+};
+
+const resetPassword = async (
+  payload: IResetPassword
+): Promise<{ message: string }> => {
+  let decoded;
+  try {
+    decoded = jwtHelpers.verifyResetPasswordToken(payload.resetToken);
+  } catch {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid or expired reset token.");
+  }
+
+  if (!decoded.sub) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid or expired reset token.");
+  }
+
+  const user = await User.findById(decoded.sub).select("+password");
+  if (!user || user.isDeleted) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "User not found or account deactivated.");
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.bcrypt_salt_rounds)
+  );
+
+  user.password = hashedPassword;
+  user.isVerified = true; // Email possession confirmed
+  await user.save();
+
+  // Enqueue security notification email via BullMQ
+  await enqueuePasswordChangedEmail(user.email, user.fullName);
+
+  return {
+    message: "Password has been reset successfully. Please log in with your new password.",
+  };
+};
+
+const changePassword = async (
+  userId: string,
+  payload: IChangePassword
+): Promise<{ message: string }> => {
+  const user = await User.findById(userId).select("+password");
+  if (!user || user.isDeleted) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
+  }
+
+  const isMatch = await bcrypt.compare(payload.oldPassword, user.password);
+  if (!isMatch) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Incorrect current password.");
+  }
+
+  const isSame = await bcrypt.compare(payload.newPassword, user.password);
+  if (isSame) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "New password cannot be the same as your current password."
+    );
+  }
+
+  user.password = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.bcrypt_salt_rounds)
+  );
+  await user.save();
+
+  // Enqueue security notification email via BullMQ
+  await enqueuePasswordChangedEmail(user.email, user.fullName);
+
+  return {
+    message: "Password changed successfully.",
+  };
+};
+
 export const AuthServices = {
   registerUser,
   verifyOtp,
@@ -242,5 +382,9 @@ export const AuthServices = {
   loginUser,
   refreshAccessToken,
   logout,
+  forgotPassword,
+  verifyResetOtp,
+  resetPassword,
+  changePassword,
 };
 

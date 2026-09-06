@@ -97,6 +97,66 @@ const logout = catchAsync(async (_req: Request, res: Response) => {
   });
 });
 
+const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthServices.forgotPassword(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: result.message,
+    data: null,
+  });
+});
+
+const verifyResetOtp = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthServices.verifyResetOtp(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Reset code verified successfully.",
+    data: result,
+  });
+});
+
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const isProduction = config.env === "production";
+  res.clearCookie(REFRESH_COOKIE_NAME, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+  });
+
+  const result = await AuthServices.resetPassword(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: result.message,
+    data: null,
+  });
+});
+
+const changePassword = catchAsync(async (req: Request, res: Response) => {
+  if (!req.user || !req.user.id) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Authentication required.");
+  }
+
+  const isProduction = config.env === "production";
+  res.clearCookie(REFRESH_COOKIE_NAME, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+  });
+
+  const result = await AuthServices.changePassword(req.user.id, req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: result.message,
+    data: null,
+  });
+});
+
 export const AuthControllers = {
   registerUser,
   verifyOtp,
@@ -104,5 +164,9 @@ export const AuthControllers = {
   loginUser,
   refreshToken,
   logout,
+  forgotPassword,
+  verifyResetOtp,
+  resetPassword,
+  changePassword,
 };
 

@@ -16,6 +16,10 @@ export interface IRefreshTokenPayload extends JwtPayload {
   type: "refresh";
 }
 
+export interface IResetPasswordPayload extends JwtPayload {
+  sub: string;
+  type: "reset_password";
+}
 
 const generateAccessToken = (userId: string, role: UserRole): string => {
   const secret = config.jwt.access_secret as Secret;
@@ -26,12 +30,10 @@ const generateAccessToken = (userId: string, role: UserRole): string => {
   return jwt.sign(payload, secret, options);
 };
 
-
 const verifyAccessToken = (token: string): IAccessTokenPayload => {
   const secret = config.jwt.access_secret as Secret;
   return jwt.verify(token, secret, { algorithms: [ALGORITHM] }) as IAccessTokenPayload;
 };
-
 
 const generateRefreshToken = (userId: string): string => {
   const secret = config.jwt.refresh_secret as Secret;
@@ -41,7 +43,6 @@ const generateRefreshToken = (userId: string): string => {
   const options: SignOptions = { algorithm: ALGORITHM, expiresIn } as any;
   return jwt.sign(payload, secret, options);
 };
-
 
 const verifyRefreshToken = (token: string): IRefreshTokenPayload => {
   const secret = config.jwt.refresh_secret as Secret;
@@ -54,7 +55,25 @@ const verifyRefreshToken = (token: string): IRefreshTokenPayload => {
   return decoded;
 };
 
+const generateResetPasswordToken = (userId: string): string => {
+  const secret = (config.jwt.reset_pass_secret || config.jwt.access_secret) as Secret;
+  const expiresIn = (config.jwt.reset_pass_expires_in as string) ?? "10m";
 
+  const payload = { sub: userId, type: "reset_password" };
+  const options: SignOptions = { algorithm: ALGORITHM, expiresIn } as any;
+  return jwt.sign(payload, secret, options);
+};
+
+const verifyResetPasswordToken = (token: string): IResetPasswordPayload => {
+  const secret = (config.jwt.reset_pass_secret || config.jwt.access_secret) as Secret;
+  const decoded = jwt.verify(token, secret, { algorithms: [ALGORITHM] }) as IResetPasswordPayload;
+
+  if (decoded.type !== "reset_password") {
+    throw new jwt.JsonWebTokenError("Invalid token type: expected password reset token");
+  }
+
+  return decoded;
+};
 
 const generateToken = (
   payload: Record<string, unknown>,
@@ -73,6 +92,8 @@ export const jwtHelpers = {
   verifyAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
+  generateResetPasswordToken,
+  verifyResetPasswordToken,
   generateToken,
   verifyToken,
 };
