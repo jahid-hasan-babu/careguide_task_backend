@@ -1,5 +1,5 @@
 export const accountCreationEmail = (email: string, password: string) => {
-  return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -122,7 +122,7 @@ export const accountCreationEmail = (email: string, password: string) => {
             </div>
             <div class="footer">
                 <p>Thank you for choosing our service.</p>
-                <p>© 2025 VMTA. All rights reserved.</p>
+                <p>© 2026 All rights reserved.</p>
             </div>
         </div>
     </body>
