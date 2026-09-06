@@ -14,7 +14,7 @@ const loginUser = z.object({
 });
 
 const refreshToken = z.object({
-  refreshToken: z.string().min(1, "Refresh token is required"),
+  refreshToken: z.string().optional(),
 });
 
 export const authValidation = { registerUser, loginUser, refreshToken };
