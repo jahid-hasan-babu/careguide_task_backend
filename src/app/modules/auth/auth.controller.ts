@@ -22,12 +22,32 @@ const getCookieOptions = (): CookieOptions => {
 const registerUser = catchAsync(async (req: Request, res: Response) => {
   const result = await AuthServices.registerUser(req.body);
 
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    message: "Registration successful. Please verify the OTP sent to your email.",
+    data: result,
+  });
+});
+
+const verifyOtp = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthServices.verifyOtp(req.body);
+
   res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, getCookieOptions());
 
   sendResponse(res, {
-    statusCode: httpStatus.CREATED,
-    message: "User registered successfully.",
+    statusCode: httpStatus.OK,
+    message: "Email verified successfully.",
     data: result,
+  });
+});
+
+const resendOtp = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthServices.resendOtp(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: result.message,
+    data: { email: result.email },
   });
 });
 
@@ -77,5 +97,12 @@ const logout = catchAsync(async (_req: Request, res: Response) => {
   });
 });
 
-export const AuthControllers = { registerUser, loginUser, refreshToken, logout };
+export const AuthControllers = {
+  registerUser,
+  verifyOtp,
+  resendOtp,
+  loginUser,
+  refreshToken,
+  logout,
+};
 

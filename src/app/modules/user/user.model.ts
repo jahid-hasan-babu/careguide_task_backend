@@ -12,6 +12,9 @@ const userSchema = new Schema<IUserDocument>(
     interests: { type: [String], default: [] },
     status: { type: String, enum: ["ACTIVE", "BLOCKED"], default: "ACTIVE" },
     isDeleted: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
+    otp: { type: String, select: false },
+    otpExpires: { type: Date, select: false },
   },
   { timestamps: true }
 );

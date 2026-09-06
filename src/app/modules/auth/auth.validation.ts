@@ -17,4 +17,19 @@ const refreshToken = z.object({
   refreshToken: z.string().optional(),
 });
 
-export const authValidation = { registerUser, loginUser, refreshToken };
+const verifyOtp = z.object({
+  email: z.string().email("Invalid email"),
+  otp: z.string().min(4, "OTP must be at least 4 characters").max(8),
+});
+
+const resendOtp = z.object({
+  email: z.string().email("Invalid email"),
+});
+
+export const authValidation = {
+  registerUser,
+  loginUser,
+  refreshToken,
+  verifyOtp,
+  resendOtp,
+};

@@ -9,6 +9,9 @@ export interface IUser {
   interests: string[];
   status: UserStatus;
   isDeleted: boolean;
+  isVerified: boolean;
+  otp?: string;
+  otpExpires?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }

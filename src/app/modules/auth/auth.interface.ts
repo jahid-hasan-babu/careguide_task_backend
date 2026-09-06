@@ -1,7 +1,5 @@
 import { UserRole } from "../user/user.interface";
 
-// ─── Request body types ────────────────────────────────────────────────────────
-
 export interface IRegisterUser {
   fullName: string;
   email: string;
@@ -17,6 +15,15 @@ export interface IUserLogin {
 
 export interface IRefreshRequest {
   refreshToken: string;
+}
+
+export interface IVerifyOtp {
+  email: string;
+  otp: string;
+}
+
+export interface IResendOtp {
+  email: string;
 }
 
 // ─── JWT payload shapes ────────────────────────────────────────────────────────

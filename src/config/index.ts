@@ -17,7 +17,15 @@ export default {
     refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
   },
   emailSender: {
-    email: process.env.EMAIL_SENDER_EMAIL,
-    app_pass: process.env.EMAIL_SENDER_APP_PASS,
+    email: process.env.EMAIL_SENDER_EMAIL || process.env.EMAIL,
+    app_pass: process.env.EMAIL_SENDER_APP_PASS || process.env.EMAIL_PASSWORD,
+  },
+  redis: {
+    host: process.env.REDIS_HOST || "127.0.0.1",
+    port: Number(process.env.REDIS_PORT) || 6379,
+    password: process.env.REDIS_PASSWORD || undefined,
+  },
+  otp: {
+    expires_in_minutes: Number(process.env.OTP_ACCESS_EXPIRES_IN) || 5,
   },
 };
