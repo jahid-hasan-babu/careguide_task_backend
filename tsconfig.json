@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/app/lib/s3Client.ts",
+    "src/app/lib/S3Uploader.ts",
+    "src/app/lib/prisma.ts",
+    "src/app/lib/deleteFromS3ByUrl.ts",
+    "src/app/lib/successTemplete.ts",
+    "src/app/lib/cancelTemplete.ts",
+    "src/app/lib/firebaseAdmin.ts",
+    "src/app/lib/checkIfUserIsAdminOrSuperAdmin .ts",
+    "src/app/middlewares/fileUploader.ts",
+    "src/app/middlewares/multerFileUploader.ts",
+    "src/app/middlewares/parseBodyData.ts",
+    "src/app/utils/sentEmailUtility.ts",
+    "src/app/utils/stripe.ts",
+    "src/app/utils/emailNotifications",
+    "src/app/helpers/stripeWebHook.ts",
+    "src/app/helpers/registrationTemplete.ts",
+    "src/app/errors/handleClientError.ts",
+    "src/app/errors/handleValidationError.ts",
+    "src/app/errors/handleZodError.ts",
+    "src/config/serviceAccount.ts"
+  ]
+}
