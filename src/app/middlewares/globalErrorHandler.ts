@@ -25,6 +25,18 @@ const globalErrorHandler = (
     statusCode = error.statusCode;
     message = error.message;
     errorMessages = [{ path: "", message: error.message }];
+  } else if (
+    typeof error === "object" &&
+    error !== null &&
+    ("statusCode" in error || "status" in error)
+  ) {
+    const err = error as { status?: number; statusCode?: number; type?: string; message?: string };
+    statusCode = err.statusCode || err.status || httpStatus.INTERNAL_SERVER_ERROR;
+    message =
+      err.type === "entity.too.large"
+        ? "Payload size exceeds permitted limit (50kb)"
+        : err.message || "Request error";
+    errorMessages = [{ path: "", message }];
   } else if (error instanceof Error) {
     message = error.message || "Unexpected error";
     errorMessages = [{ path: "", message: error.message }];

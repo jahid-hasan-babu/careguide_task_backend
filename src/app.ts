@@ -1,45 +1,61 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Application, NextFunction, Request, Response } from "express";
+import helmet from "helmet";
+import hpp from "hpp";
 import httpStatus from "http-status";
+import mongoSanitize from "express-mongo-sanitize";
 import morgan from "morgan";
-import rateLimit from "express-rate-limit";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
+import { authLimiter, globalLimiter } from "./app/middlewares/rateLimiter";
 import router from "./app/routes";
 
 const app: Application = express();
 
-const corsOptions = {
-  origin: ["http://localhost:3000", "http://localhost:5173"],
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-};
+app.set("trust proxy", 1);
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 1000,
-  message: {
-    success: false,
-    message: "Too many requests from this IP, please try again after 15 minutes.",
-  },
-});
+app.use(helmet());
 
-app.use(cors(corsOptions));
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:5174",
+  ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === "development") {
+        return callback(null, true);
+      }
+      return callback(new Error("Blocked by CORS policy"));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 app.use(cookieParser());
-app.use(limiter);
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ limit: "10mb", extended: true }));
-app.use(morgan("dev"));
 
+app.use(express.json({ limit: "50kb" }));
+app.use(express.urlencoded({ limit: "50kb", extended: true }));
+
+app.use(mongoSanitize());
+app.use(hpp());
+if (process.env.NODE_ENV !== "test") {
+  app.use(morgan("dev"));
+}
+app.use("/api/v1/auth", authLimiter);
+app.use("/api/v1", globalLimiter);
 app.get("/", (_req: Request, res: Response) => {
-  res.json({ message: "Secure Note-Taking API is running." });
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "Secure Note-Taking API is running.",
+  });
 });
-
 app.use("/api/v1", router);
-
 app.use(globalErrorHandler);
-
 app.use((req: Request, res: Response, _next: NextFunction) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
@@ -52,3 +68,4 @@ app.use((req: Request, res: Response, _next: NextFunction) => {
 });
 
 export default app;
+
