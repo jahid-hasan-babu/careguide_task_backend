@@ -6,12 +6,18 @@ import {
   passwordChangedSuccessTemplate,
   passwordResetOtpTemplate,
 } from "../helpers/passwordResetTemplate";
+import { accountCreationEmail } from "../helpers/registrationTemplete";
 
 export interface IEmailJobData {
   email: string;
   fullName: string;
   otp?: string;
-  type: "OTP_VERIFICATION" | "PASSWORD_RESET_OTP" | "PASSWORD_CHANGED_NOTIFICATION";
+  password?: string;
+  type:
+    | "OTP_VERIFICATION"
+    | "PASSWORD_RESET_OTP"
+    | "PASSWORD_CHANGED_NOTIFICATION"
+    | "ADMIN_CREATE_USER";
 }
 
 export const EMAIL_QUEUE_NAME = "email-queue";
@@ -105,6 +111,32 @@ export const enqueuePasswordChangedEmail = async (
   }
 };
 
+export const enqueueUserWelcomeEmail = async (
+  email: string,
+  fullName: string,
+  password: string
+): Promise<void> => {
+  try {
+    await emailQueue.add("send-user-welcome-email", {
+      email,
+      fullName,
+      password,
+      type: "ADMIN_CREATE_USER",
+    });
+  } catch (queueErr) {
+    console.warn("⚠️ BullMQ queueing failed, falling back to direct async delivery:", queueErr);
+    const html = accountCreationEmail(fullName, email, password);
+    sentEmailUtility(
+      email,
+      "Welcome to NoteTask - Your Account Credentials",
+      `Hello ${fullName}, your NoteTask account has been created.\nEmail: ${email}\nPassword: ${password}`,
+      html
+    ).catch((mailErr) => {
+      console.error("❌ Direct email fallback also failed:", mailErr);
+    });
+  }
+};
+
 export let emailWorker: Worker<IEmailJobData> | null = null;
 
 export const initEmailWorker = (): Worker<IEmailJobData> => {
@@ -113,7 +145,7 @@ export const initEmailWorker = (): Worker<IEmailJobData> => {
   emailWorker = new Worker<IEmailJobData>(
     EMAIL_QUEUE_NAME,
     async (job: Job<IEmailJobData>) => {
-      const { email, fullName, otp, type } = job.data;
+      const { email, fullName, otp, password, type } = job.data;
       console.log(`[BullMQ] Processing job ${job.id}: (${type}) for ${email}`);
 
       if (type === "OTP_VERIFICATION") {
@@ -138,6 +170,14 @@ export const initEmailWorker = (): Worker<IEmailJobData> => {
           email,
           "NoteTask - Your Password Was Updated",
           "The password for your account was successfully updated.",
+          html
+        );
+      } else if (type === "ADMIN_CREATE_USER") {
+        const html = accountCreationEmail(fullName, email, password || "");
+        await sentEmailUtility(
+          email,
+          "Welcome to NoteTask - Your Account Credentials",
+          `Hello ${fullName}, your NoteTask account has been created.\nEmail: ${email}\nPassword: ${password}`,
           html
         );
       }

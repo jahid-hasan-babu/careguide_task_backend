@@ -7,7 +7,7 @@ const seedSuperAdmin = async () => {
   const password = config.super_admin_password as string;
 
   const existing = await User.findOne({ email });
-  if (existing) return;
+  if (existing) { if (!existing.isVerified) { existing.isVerified = true; await existing.save(); console.log("Super admin verified."); } return; }
 
   const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds));
 
@@ -16,7 +16,7 @@ const seedSuperAdmin = async () => {
     email,
     password: hashedPassword,
     role: "ADMIN",
-    interests: [],
+    interests: [], isVerified: true,
   });
 
   console.log("✅ Super admin seeded successfully.");

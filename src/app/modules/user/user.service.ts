@@ -4,6 +4,7 @@ import { Types } from "mongoose";
 import config from "../../../config";
 import ApiError from "../../errors/ApiError";
 import { paginationHelper } from "../../helpers/paginationHelper";
+import { enqueueUserWelcomeEmail } from "../../queues/email.queue";
 import User from "./user.model";
 
 const getAllUsers = async (options: {
@@ -63,7 +64,8 @@ const createUser = async (payload: {
   const existing = await User.findOne({ email: payload.email.toLowerCase() });
   if (existing) throw new ApiError(httpStatus.CONFLICT, "User already exists with this email.");
 
-  const hashedPassword = await bcrypt.hash(payload.password, Number(config.bcrypt_salt_rounds));
+  const plainPassword = payload.password;
+  const hashedPassword = await bcrypt.hash(plainPassword, Number(config.bcrypt_salt_rounds));
 
   const user = await User.create({
     fullName: payload.fullName,
@@ -71,7 +73,11 @@ const createUser = async (payload: {
     password: hashedPassword,
     role: payload.role || "USER",
     interests: payload.interests || [],
+    isVerified: true,
   });
+
+  // Enqueue welcome email with credentials
+  await enqueueUserWelcomeEmail(user.email, user.fullName, plainPassword);
 
   const result = user.toObject() as any;
   delete result.password;
