@@ -4,7 +4,7 @@ import httpStatus from "http-status";
 
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 1000,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   skip: () => process.env.NODE_ENV === "test",
@@ -16,7 +16,7 @@ export const globalLimiter = rateLimit({
 });
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 100,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   skip: () => process.env.NODE_ENV === "test",
